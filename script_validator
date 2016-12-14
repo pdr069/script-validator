@@ -4,6 +4,7 @@ DEBUG=""
 sh_opts="/bin/bash -n"
 SEARCH_PATH="."
 FILENAME="*"
+RE="^\/"
 
 usage() {
     echo "
@@ -28,6 +29,10 @@ while getopts ":dp:f:" opt; do
         ;;
     f)
         FILENAME="${OPTARG}"
+        if [[ $FILENAME =~ $RE ]]; then
+            SEARCH_PATH=$(dirname $FILENAME)
+            FILENAME=$(basename $FILENAME)
+        fi
         ;;
     *)
         usage
