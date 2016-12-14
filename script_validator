@@ -1,0 +1,63 @@
+#!/bin/bash
+
+DEBUG=""
+sh_opts="/bin/bash -n"
+SEARCH_PATH="."
+FILENAME="*"
+
+usage() {
+    echo "
+usage: $(basename $0) -d|-p <path_to_scripts>|-f <file pattern>
+-d        Enable debugging to show where error(s) are.
+-p        Path to find scripts (default is '.').
+-f        Filename pattern or script name to check.
+
+"
+    exit 0
+}
+
+while getopts ":dp:f:" opt; do
+    case $opt in 
+    d)
+        DEBUG=1
+        ;;
+
+    p)
+        SEARCH_PATH="${OPTARG}"
+        ;;
+    f)
+        FILENAME="${OPTARG}"
+        ;;
+    *)
+        usage
+        ;;
+    esac
+done
+
+# Find only the top-level scripts.
+for script in $(find ${SEARCH_PATH} -maxdepth 1 -type f -name "${FILENAME}"); do
+    report_string="$(basename ${script})"
+
+    # Ensure script is executable.
+    if [ -x "${script}" ]; then
+        report_string="PASS: ${report_string} executable"
+    else
+        report_string="WARN: ${report_string} not executable"
+    fi
+
+    # Check script for syntax errors.
+    lo=$(cat -n ${script})
+    co=$($sh_opts ${script} 2>&1)
+
+    if [ $? != 0 ]; then 
+        report_string="FAILED: ${script}; ${report_string}"
+         [ $DEBUG ] && \
+            echo -e "FAILED: ${script}\n${lo}\n${co}\n\n"
+    else
+        report_string="PASSED: ${script}; ${report_string}"
+    fi
+
+    # Print the result of the syntax/executable bit checking.
+    echo "${report_string}"
+done
+
