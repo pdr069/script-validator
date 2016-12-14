@@ -8,6 +8,7 @@ FILENAME="*"
 usage() {
     echo "
 usage: $(basename $0) -d|-p <path_to_scripts>|-f <file pattern>
+
 -d        Enable debugging to show where error(s) are.
 -p        Path to find scripts (default is '.').
 -f        Filename pattern or script name to check.
